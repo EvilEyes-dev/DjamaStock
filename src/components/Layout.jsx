@@ -24,7 +24,7 @@ export default function Layout() {
         <Outlet />
       </div>
 
-      <nav className="nav" style={{ maxWidth: 480, left: '50%', transform: 'translateX(-50%)' }}>
+      <nav className="nav">
         {NAV.map(({ to, icon, label }) => (
           <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <span className="nav-icon">{icon}</span>
