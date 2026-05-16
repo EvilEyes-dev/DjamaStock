@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FileText, Plus, User, Pencil, Trash2, CheckCircle, Link } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -7,7 +8,7 @@ const EMPTY = { client_name: '', amount: '' }
 export default function Debts() {
   const user = useAuth()
   const [debts, setDebts] = useState([])
-  const [sales, setSales] = useState({}) // sale_id -> sale
+  const [sales, setSales] = useState({})
   const [form, setForm] = useState(EMPTY)
   const [editId, setEditId] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -20,7 +21,6 @@ export default function Debts() {
       .order('paid').order('created_at', { ascending: false })
     setDebts(debtsData || [])
 
-    // Load linked sales
     const saleIds = [...new Set((debtsData || []).map(d => d.sale_id).filter(Boolean))]
     if (saleIds.length > 0) {
       const { data: salesData } = await supabase.from('sales').select('id, product_name, quantity, created_at').in('id', saleIds)
@@ -81,8 +81,8 @@ export default function Debts() {
     if (!s) return null
     const date = new Date(s.created_at).toLocaleDateString('fr-GN', { day: 'numeric', month: 'short' })
     return (
-      <p style={{ fontSize: 12, color: 'var(--gray)', marginTop: 6 }}>
-        🔗 Vente du {date} : {s.product_name} × {s.quantity}
+      <p style={{ fontSize: 12, color: 'var(--gray)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <Link size={11} /> Vente du {date} : {s.product_name} × {s.quantity}
       </p>
     )
   }
@@ -90,7 +90,8 @@ export default function Debts() {
   return (
     <div className="page pb-nav">
       <div className="page-header">
-        <h1 className="page-title">📋 Dettes</h1>
+        <FileText size={26} color="var(--blue)" />
+        <h1 className="page-title">Dettes</h1>
       </div>
 
       {unpaid.length > 0 && (
@@ -101,7 +102,9 @@ export default function Debts() {
       )}
 
       {!showForm ? (
-        <button className="btn btn-blue" onClick={openAdd}>+ Ajouter une dette</button>
+        <button className="btn btn-blue" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Plus size={20} /> Ajouter une dette
+        </button>
       ) : (
         <div className="card">
           <h2 style={{ marginBottom: 14, fontSize: 17 }}>{editId ? 'Modifier la dette' : 'Nouvelle dette'}</h2>
@@ -117,9 +120,7 @@ export default function Debts() {
                 placeholder="0" min="1" required />
             </div>
             {error && <p className="error">{error}</p>}
-            <button className="btn btn-blue" type="submit" disabled={loading}>
-              {loading ? '...' : editId ? '💾 Enregistrer' : 'Enregistrer'}
-            </button>
+            <button className="btn btn-blue" type="submit" disabled={loading}>{loading ? '...' : 'Enregistrer'}</button>
             <button className="btn btn-gray mt-12" type="button" onClick={() => setShowForm(false)}>Annuler</button>
           </form>
         </div>
@@ -131,14 +132,22 @@ export default function Debts() {
         {unpaid.map(d => (
           <div className="card" key={d.id}>
             <div className="card-row">
-              <span className="fw-bold" style={{ fontSize: 17 }}>👤 {d.client_name}</span>
+              <span className="fw-bold" style={{ fontSize: 17, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <User size={16} /> {d.client_name}
+              </span>
               <span className="fw-bold text-red">{fmt(d.amount)} GNF</span>
             </div>
             {d.sale_id && <SaleLink saleId={d.sale_id} />}
             <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-              <button className="btn btn-green btn-sm" onClick={() => markPaid(d.id)}>✅ Payé</button>
-              <button className="btn btn-gray btn-sm" onClick={() => openEdit(d)}>✏️ Modifier</button>
-              <button className="btn btn-sm" style={{ background: 'var(--red-light)', color: 'var(--red)' }} onClick={() => setConfirmDelete(d)}>🗑️</button>
+              <button className="btn btn-green btn-sm" onClick={() => markPaid(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CheckCircle size={14} /> Payé
+              </button>
+              <button className="btn btn-gray btn-sm" onClick={() => openEdit(d)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Pencil size={14} /> Modifier
+              </button>
+              <button className="btn btn-sm" style={{ background: 'var(--red-light)', color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setConfirmDelete(d)}>
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
         ))}
@@ -150,7 +159,7 @@ export default function Debts() {
             {paid.map(d => (
               <div className="card" key={d.id} style={{ opacity: 0.6 }}>
                 <div className="card-row">
-                  <span>👤 {d.client_name}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><User size={14} /> {d.client_name}</span>
                   <span className="badge badge-green">Payé — {fmt(d.amount)} GNF</span>
                 </div>
                 {d.sale_id && <SaleLink saleId={d.sale_id} />}

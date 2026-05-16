@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Package, Pencil, Trash2, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,7 +9,7 @@ export default function Products() {
   const user = useAuth()
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(EMPTY)
-  const [editId, setEditId] = useState(null) // null = add mode
+  const [editId, setEditId] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -39,12 +40,7 @@ export default function Products() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const payload = {
-      name: form.name.trim(),
-      buy_price: Number(form.buy_price),
-      sell_price: Number(form.sell_price),
-      quantity: Number(form.quantity),
-    }
+    const payload = { name: form.name.trim(), buy_price: Number(form.buy_price), sell_price: Number(form.sell_price), quantity: Number(form.quantity) }
     const { error } = editId
       ? await supabase.from('products').update(payload).eq('id', editId)
       : await supabase.from('products').insert({ ...payload, user_id: user.id })
@@ -65,11 +61,14 @@ export default function Products() {
   return (
     <div className="page pb-nav">
       <div className="page-header">
-        <h1 className="page-title">📦 Stock</h1>
+        <Package size={26} color="var(--green)" />
+        <h1 className="page-title">Stock</h1>
       </div>
 
       {!showForm ? (
-        <button className="btn btn-green" onClick={openAdd}>+ Ajouter un produit</button>
+        <button className="btn btn-green" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Plus size={20} /> Ajouter un produit
+        </button>
       ) : (
         <div className="card">
           <h2 style={{ marginBottom: 14, fontSize: 17 }}>{editId ? 'Modifier le produit' : 'Nouveau produit'}</h2>
@@ -91,9 +90,7 @@ export default function Products() {
               <input type="number" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} placeholder="0" min="0" required />
             </div>
             {error && <p className="error">{error}</p>}
-            <button className="btn btn-green" type="submit" disabled={loading}>
-              {loading ? '...' : editId ? '💾 Enregistrer les modifications' : 'Enregistrer'}
-            </button>
+            <button className="btn btn-green" type="submit" disabled={loading}>{loading ? '...' : 'Enregistrer'}</button>
             <button className="btn btn-gray mt-12" type="button" onClick={() => setShowForm(false)}>Annuler</button>
           </form>
         </div>
@@ -113,8 +110,12 @@ export default function Products() {
                 <span className="fw-bold text-green">Vente: {fmt(p.sell_price)} GNF</span>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="btn btn-gray btn-sm" onClick={() => openEdit(p)}>✏️ Modifier</button>
-                <button className="btn btn-sm" style={{ background: 'var(--red-light)', color: 'var(--red)' }} onClick={() => setConfirmDelete(p)}>🗑️ Supprimer</button>
+                <button className="btn btn-gray btn-sm" onClick={() => openEdit(p)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Pencil size={14} /> Modifier
+                </button>
+                <button className="btn btn-sm" style={{ background: 'var(--red-light)', color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setConfirmDelete(p)}>
+                  <Trash2 size={14} /> Supprimer
+                </button>
               </div>
             </div>
           ))

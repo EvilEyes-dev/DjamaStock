@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Home, TrendingUp, Package, FileText, LogOut } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { getQueue } from '../lib/offlineQueue'
 
 const NAV = [
-  { to: '/', icon: '🏠', label: 'Accueil' },
-  { to: '/ventes', icon: '💰', label: 'Ventes' },
-  { to: '/stock', icon: '📦', label: 'Stock' },
-  { to: '/dettes', icon: '📋', label: 'Dettes' },
+  { to: '/', icon: Home, label: 'Accueil' },
+  { to: '/ventes', icon: TrendingUp, label: 'Ventes' },
+  { to: '/stock', icon: Package, label: 'Stock' },
+  { to: '/dettes', icon: FileText, label: 'Dettes' },
 ]
 
 export default function Layout() {
@@ -24,24 +26,28 @@ export default function Layout() {
         <Outlet />
       </div>
 
-      <nav className="nav">
-        {NAV.map(({ to, icon, label }) => (
+      <nav className="nav" style={{ maxWidth: 480, left: '50%', transform: 'translateX(-50%)' }}>
+        {NAV.map(({ to, icon: Icon, label }) => (
           <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-            <span className="nav-icon">{icon}</span>
+            <div style={{ position: 'relative', display: 'inline-flex' }}>
+              <Icon size={22} />
+              {to === '/ventes' && getQueue().length > 0 && (
+                <span style={{ position: 'absolute', top: -4, right: -6, background: 'var(--orange)', color: 'white', borderRadius: '50%', fontSize: 10, fontWeight: 700, width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {getQueue().length}
+                </span>
+              )}
+            </div>
             {label}
           </NavLink>
         ))}
         <button className="nav-item" onClick={() => setConfirm(true)}>
-          <span className="nav-icon">🚪</span>
+          <LogOut size={22} />
           Sortir
         </button>
       </nav>
 
       {confirm && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100
-        }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'white', borderRadius: '16px 16px 0 0', padding: 24, width: '100%', maxWidth: 480 }}>
             <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Se déconnecter ?</p>
             <p style={{ color: 'var(--gray)', marginBottom: 20 }}>Vous devrez vous reconnecter pour accéder à votre boutique.</p>
